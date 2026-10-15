@@ -1,0 +1,1024 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>QPU — The Quantum Computing Launchpad</title>
+<meta name="description" content="Launch a coin. Power a quantum computer. A Solana launchpad for tokenized quantum computing agents.">
+<link rel="icon" href="logo-icon.png">
+<meta property="og:title" content="QPU — The Quantum Computing Launchpad">
+<meta property="og:description" content="Launch a coin. Power a quantum computer.">
+<meta property="og:image" content="logo-full.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#000000">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400;600;700&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@solana/web3.js@1.95.8/lib/index.iife.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<style>
+:root{
+  --void:#000000;
+  --gunmetal:#16171a;
+  --plate:#1f2125;
+  --seam:#34373d;
+  --steel:#8a8f97;
+  --chrome:#c8ccd2;
+  --white:#f3f4f6;
+  --live:#7ee0a1;
+  --chrome-grad:linear-gradient(180deg,#ffffff 0%,#d9dce1 38%,#7d828a 52%,#e7e9ec 68%,#9ca1a8 100%);
+  --pixel:'Pixelify Sans','Courier New',monospace;
+  --body:'Instrument Sans',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --mono:'JetBrains Mono',ui-monospace,Menlo,monospace;
+  color-scheme:dark;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+html{scroll-padding-top:calc(env(safe-area-inset-top,0px) + 80px);scroll-behavior:smooth}
+*,*::before,*::after{box-sizing:inherit}
+body{margin:0;background:var(--void);color:var(--white);font-family:var(--body);font-size:16px;line-height:1.55;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+img{max-width:100%;display:block}
+a{color:inherit}
+button,input,select{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--white);outline-offset:3px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:60;background:rgba(0,0,0,.85)}
+
+.wrap{width:min(1180px,100% - 40px);margin-inline:auto}
+
+/* ---------- Nav ---------- */
+.nav{position:sticky;top:env(safe-area-inset-top,0px);z-index:50;background:rgba(0,0,0,.82);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-bottom:1px solid var(--seam)}
+.nav .wrap{display:flex;align-items:center;gap:28px;height:68px}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none}
+.brand img{width:22px;height:48px;image-rendering:pixelated}
+.brand span{font-family:var(--pixel);font-weight:700;font-size:26px;letter-spacing:.02em;background:var(--chrome-grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+.links{display:flex;gap:22px;margin-right:auto}
+.links a{text-decoration:none;color:var(--steel);font-size:15px;font-weight:500}
+.links a:hover{color:var(--white)}
+.xbtn{display:grid;place-items:center;width:42px;height:42px;border:1px solid var(--seam);border-radius:6px;color:var(--white);text-decoration:none;flex:none}
+.xbtn:hover{border-color:var(--chrome)}
+.menu-btn{display:none;background:none;border:1px solid var(--seam);border-radius:6px;padding:8px 10px;cursor:pointer}
+
+/* Buttons: machined chrome */
+.btn{display:inline-flex;align-items:center;gap:8px;cursor:pointer;border-radius:6px;font-weight:600;font-size:15px;padding:11px 18px;text-decoration:none;border:1px solid transparent;transition:transform .12s ease,filter .12s ease}
+.btn:active{transform:translateY(1px)}
+.btn-chrome{background:var(--chrome-grad);color:#0a0a0a;border-color:#fff;box-shadow:inset 0 -2px 0 rgba(0,0,0,.35),0 0 0 1px #000}
+.btn-chrome:hover{filter:brightness(1.08)}
+.btn-ghost{background:transparent;color:var(--white);border-color:var(--seam)}
+.btn-ghost:hover{border-color:var(--chrome)}
+.wallet-btn .dot{width:8px;height:8px;border-radius:50%;background:#555}
+.wallet-btn.on .dot{background:var(--live);box-shadow:0 0 8px var(--live)}
+.wallet-wrap{position:relative}
+.wallet-menu{position:absolute;right:0;top:calc(100% + 8px);background:var(--gunmetal);border:1px solid var(--seam);border-radius:8px;min-width:230px;padding:8px;display:none}
+.wallet-menu.open{display:block}
+.wallet-menu .addr{font-family:var(--mono);font-size:12px;color:var(--steel);padding:8px 10px;word-break:break-all;border-bottom:1px solid var(--seam);margin-bottom:6px}
+.wallet-menu button{width:100%;text-align:left;background:none;border:0;padding:9px 10px;border-radius:6px;cursor:pointer;font-size:14px}
+.wallet-menu button:hover{background:var(--plate)}
+
+/* ---------- Hero ---------- */
+.hero{position:relative;padding:72px 0 40px;overflow:hidden}
+.hero::before{content:"";position:absolute;inset:0;background:radial-gradient(ellipse 40% 55% at 72% 50%,rgba(200,204,210,.10),transparent 70%);pointer-events:none}
+.hero .wrap{display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:center;position:relative}
+.status{display:inline-flex;align-items:center;gap:8px;font-family:var(--mono);font-size:13px;color:var(--steel);margin-bottom:26px}
+.status i{width:7px;height:7px;border-radius:50%;background:var(--live);box-shadow:0 0 10px var(--live);animation:blink 2s steps(2) infinite}
+@keyframes blink{50%{opacity:.25}}
+h1{font-family:var(--pixel);font-weight:700;font-size:clamp(44px,7.4vw,96px);line-height:.95;letter-spacing:-.01em;margin:0 0 26px;background:var(--chrome-grad);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 2px 0 #000)}
+.lede{font-size:19px;color:var(--chrome);max-width:34em;margin:0 0 34px}
+.hero-cta{display:flex;gap:12px;flex-wrap:wrap}
+.sandbox{position:relative;width:100%;aspect-ratio:4/5;max-height:640px;border:1px solid var(--seam);border-radius:14px;overflow:hidden;background:radial-gradient(ellipse 70% 55% at 50% 42%,#1c1d21 0%,#000 75%);touch-action:none;user-select:none;-webkit-user-select:none}
+.sandbox canvas{position:absolute;inset:0;width:100%!important;height:100%!important;display:block;cursor:grab}
+.sandbox canvas:active{cursor:grabbing}
+.sb-fallback{position:absolute;inset:0;margin:auto;height:88%;width:auto;display:none}
+.sandbox.no-gl .sb-fallback{display:block}
+.sandbox.no-gl .sb-hud,.sandbox.no-gl .sb-controls,.sandbox.no-gl .sb-hint{display:none}
+.sb-hud{position:absolute;top:14px;left:14px;right:14px;display:flex;justify-content:space-between;pointer-events:none}
+.sb-hud div{background:rgba(0,0,0,.6);border:1px solid var(--seam);border-radius:8px;padding:8px 12px;min-width:92px}
+.sb-hud span{display:block;font-size:11.5px;color:var(--steel)}
+.sb-hud b{font-family:var(--pixel);font-size:24px;line-height:1.1;font-weight:600;display:inline-block;transition:transform .15s}
+.sb-hud b.bump{transform:scale(1.25)}
+.sb-controls{position:absolute;left:14px;right:14px;bottom:14px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+.sb-controls button{background:rgba(0,0,0,.7);border:1px solid var(--seam);color:var(--white);border-radius:999px;padding:8px 14px;font-size:13.5px;font-weight:500;cursor:pointer}
+.sb-controls button:hover{border-color:var(--chrome)}
+.sb-controls button.primary{background:var(--chrome-grad);color:#0a0a0a;border-color:#fff}
+.sb-hint{position:absolute;left:0;right:0;bottom:62px;text-align:center;margin:0;font-size:13px;color:var(--chrome);pointer-events:none;transition:opacity .6s;padding:0 16px;text-shadow:0 1px 4px #000}
+.sb-hint.gone{opacity:0}
+
+/* Empty agents state */
+.empty{border:1px dashed var(--seam);border-radius:12px;padding:56px 24px;text-align:center}
+.empty-slots{display:flex;gap:10px;justify-content:center;margin-bottom:26px}
+.empty-slots span{width:46px;height:46px;border:1px dashed var(--seam);border-radius:4px;display:grid;place-items:center;font-family:var(--pixel);color:var(--seam);font-size:20px}
+.empty h3{font-family:var(--pixel);font-weight:600;font-size:28px;margin:0 0 10px}
+.empty p{color:var(--steel);margin:0 auto 26px;max-width:32em}
+
+/* Ticker */
+.ticker{border-block:1px solid var(--seam);background:var(--gunmetal);overflow:hidden;white-space:nowrap;margin-top:56px}
+.ticker-track{display:inline-flex;gap:44px;padding:12px 0;animation:scroll 48s linear infinite;font-family:var(--mono);font-size:13px;color:var(--steel)}
+.ticker-track b{color:var(--white);font-weight:600}
+.ticker-track .ok{color:var(--live)}
+@keyframes scroll{to{transform:translateX(-50%)}}
+
+/* ---------- Sections ---------- */
+section{padding:96px 0}
+h2{font-family:var(--pixel);font-weight:600;font-size:clamp(32px,4.4vw,52px);line-height:1.05;margin:0 0 14px;color:var(--white)}
+.sub{color:var(--steel);max-width:40em;margin:0 0 40px;font-size:17px}
+.head-row{display:flex;justify-content:space-between;align-items:flex-end;gap:24px;flex-wrap:wrap;margin-bottom:28px}
+.head-row .sub{margin:0}
+
+/* Agents grid */
+.filters{display:flex;gap:6px;flex-wrap:wrap}
+.filters button{background:transparent;border:1px solid var(--seam);color:var(--steel);border-radius:999px;padding:7px 14px;font-size:14px;cursor:pointer}
+.filters button[aria-pressed="true"]{background:var(--white);color:#000;border-color:var(--white)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:1px;background:var(--seam);border:1px solid var(--seam)}
+.agent{background:var(--void);padding:22px;display:flex;flex-direction:column;gap:16px;cursor:pointer;transition:background .15s}
+.agent:hover{background:var(--gunmetal)}
+.agent-top{display:flex;gap:14px;align-items:center}
+.sigil{width:46px;height:46px;flex:none;display:grid;place-items:center;border:1px solid var(--seam);background:var(--plate);border-radius:4px;font-family:var(--pixel);font-size:20px;color:var(--chrome)}
+.agent h3{margin:0;font-family:var(--pixel);font-weight:600;font-size:21px;line-height:1.1}
+.agent .spec{font-size:13px;color:var(--steel)}
+.agent dl{display:grid;grid-template-columns:1fr 1fr;gap:10px 16px;margin:0}
+.agent dt{font-size:12px;color:var(--steel)}
+.agent dd{margin:0;font-family:var(--mono);font-size:14px}
+.bar{height:6px;background:var(--plate);border-radius:3px;overflow:hidden}
+.bar span{display:block;height:100%;background:var(--chrome-grad)}
+.bar-label{display:flex;justify-content:space-between;font-size:12px;color:var(--steel);margin-bottom:6px}
+.note{font-size:13px;color:var(--steel);margin-top:14px}
+
+/* Steps */
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:0;border-top:1px solid var(--seam)}
+.step{padding:28px 26px 30px 0;border-bottom:1px solid var(--seam)}
+.step:nth-child(3n+2),.step:nth-child(3n+3){padding-left:26px;border-left:1px solid var(--seam)}
+.step .n{font-family:var(--pixel);font-size:40px;line-height:1;color:var(--seam);margin-bottom:18px;display:block}
+.step h3{margin:0 0 8px;font-size:19px;font-weight:600}
+.step p{margin:0;color:var(--steel);font-size:15px}
+
+/* Factory */
+.factory{display:grid;grid-template-columns:1fr 1fr;gap:28px;align-items:start}
+.panel{background:var(--gunmetal);border:1px solid var(--seam);border-radius:10px;padding:28px}
+.panel h3{margin:0 0 20px;font-family:var(--pixel);font-weight:600;font-size:24px}
+.field{margin-bottom:18px}
+.field label{display:block;font-size:14px;color:var(--chrome);margin-bottom:7px;font-weight:500}
+.field input,.field select{width:100%;background:var(--void);border:1px solid var(--seam);border-radius:6px;padding:12px 13px;font-size:15px}
+.field input:focus,.field select:focus{border-color:var(--chrome);outline:none}
+.field .hint{font-size:12.5px;color:var(--steel);margin-top:6px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.specs{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.specs label{display:flex;gap:10px;align-items:flex-start;border:1px solid var(--seam);border-radius:6px;padding:11px 12px;cursor:pointer;font-size:14px;background:var(--void)}
+.specs input{accent-color:#fff;margin-top:3px}
+.specs label:has(input:checked){border-color:var(--chrome);background:var(--plate)}
+.specs small{display:block;color:var(--steel);font-size:12px}
+.form-msg{font-size:14px;margin-top:12px;min-height:1.4em;color:var(--steel)}
+
+/* Dashboard preview */
+.dash .dash-head{display:flex;align-items:center;gap:14px;margin-bottom:22px}
+.dash .dash-head .sigil{width:56px;height:56px;font-size:24px}
+.dash .tk{font-family:var(--pixel);font-size:28px;line-height:1}
+.dash .kind{color:var(--steel);font-size:14px}
+.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--seam);border:1px solid var(--seam);border-radius:6px;overflow:hidden;margin-bottom:22px}
+.kpis div{background:var(--void);padding:14px}
+.kpis span{display:block;font-size:12px;color:var(--steel)}
+.kpis b{font-family:var(--mono);font-size:17px;font-weight:600}
+.chart-cap{font-size:13px;color:var(--steel);margin-bottom:8px;display:flex;justify-content:space-between}
+.chart svg{width:100%;height:auto;display:block}
+.log{margin-top:20px;font-family:var(--mono);font-size:12.5px;color:var(--steel);border-top:1px solid var(--seam);padding-top:14px;display:grid;gap:6px}
+.log b{color:var(--white);font-weight:400}
+
+/* Flywheel */
+.fly{display:grid;grid-template-columns:.9fr 1.1fr;gap:56px;align-items:center}
+.fly svg{width:100%;max-width:480px;height:auto;margin-inline:auto;display:block}
+.fly-list{list-style:none;margin:0;padding:0;counter-reset:f}
+.fly-list li{display:flex;gap:16px;padding:16px 0;border-bottom:1px solid var(--seam);font-size:17px}
+.fly-list li::before{counter-increment:f;content:counter(f);font-family:var(--pixel);color:var(--steel);width:22px;flex:none}
+
+/* Compare */
+.compare{display:grid;grid-template-columns:1fr 1fr;border:1px solid var(--seam);border-radius:10px;overflow:hidden}
+.compare>div{padding:34px}
+.compare>div:first-child{background:var(--gunmetal);color:var(--steel)}
+.compare>div:last-child{background:linear-gradient(180deg,#1b1c20,#000)}
+.compare h3{font-family:var(--pixel);font-weight:600;font-size:26px;margin:0 0 12px;color:var(--white)}
+.compare p{margin:0;font-size:16.5px}
+
+/* Revenue */
+.rev{display:grid;grid-template-columns:repeat(5,1fr);gap:1px;background:var(--seam);border:1px solid var(--seam)}
+.rev div{background:var(--void);padding:22px 18px}
+.rev h4{margin:0 0 6px;font-size:16px;font-weight:600}
+.rev p{margin:0;color:var(--steel);font-size:14px}
+.roadmap{margin-top:40px;display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
+.roadmap div{border-top:2px solid var(--chrome);padding-top:14px}
+.roadmap h4{margin:0 0 6px;font-family:var(--pixel);font-weight:600;font-size:19px}
+.roadmap p{margin:0;color:var(--steel);font-size:15px}
+
+/* Final CTA */
+.final{text-align:center;padding:110px 0}
+.final h2{font-size:clamp(36px,5.6vw,68px);background:var(--chrome-grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+.final .sub{margin-inline:auto}
+
+footer{border-top:1px solid var(--seam);padding:40px 0 48px;color:var(--steel);font-size:14px}
+footer .wrap{display:grid;gap:22px}
+footer .top{display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap}
+footer .flinks{display:flex;gap:20px;flex-wrap:wrap}
+footer .flinks a{text-decoration:none}
+footer .flinks a:hover{color:var(--white)}
+.disclaimer{max-width:70em;font-size:13px;line-height:1.6}
+
+/* Modal */
+.modal{position:fixed;inset:0;z-index:100;background:rgba(0,0,0,.75);display:none;align-items:center;justify-content:center;padding:20px}
+.modal.open{display:flex}
+.modal-card{background:var(--gunmetal);border:1px solid var(--seam);border-radius:12px;width:min(400px,100%);padding:24px}
+.modal-card h3{margin:0 0 6px;font-family:var(--pixel);font-weight:600;font-size:24px}
+.modal-card>p{margin:0 0 18px;color:var(--steel);font-size:14px}
+.wlist{display:grid;gap:8px}
+.wlist button,.wlist a{display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--void);border:1px solid var(--seam);border-radius:8px;padding:14px;cursor:pointer;text-decoration:none;font-weight:500;width:100%;text-align:left}
+.wlist button:hover,.wlist a:hover{border-color:var(--chrome)}
+.wlist small{color:var(--steel);font-weight:400;font-size:12.5px}
+.modal-close{margin-top:16px;width:100%}
+
+.toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translate(-50%,20px);background:var(--white);color:#000;padding:12px 18px;border-radius:8px;font-size:14.5px;font-weight:500;opacity:0;pointer-events:none;transition:all .25s;z-index:120;max-width:calc(100% - 40px)}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+
+/* ---------- Responsive ---------- */
+@media (max-width:980px){
+  .links{display:none}
+  .menu-btn{display:block;margin-left:auto}
+  .nav .wrap{gap:12px}
+  .links.open{display:flex;position:absolute;top:68px;left:0;right:0;flex-direction:column;background:#000;border-bottom:1px solid var(--seam);padding:16px 20px;gap:14px}
+  .hero .wrap,.factory,.fly{grid-template-columns:1fr}
+  .sandbox{aspect-ratio:1/1;max-height:560px}
+  .rev{grid-template-columns:1fr 1fr}
+  .steps{grid-template-columns:1fr 1fr}
+  .step,.step:nth-child(3n+2),.step:nth-child(3n+3){padding:24px 20px 24px 0;border-left:0}
+  .step:nth-child(2n){padding-left:20px;border-left:1px solid var(--seam)}
+}
+@media (max-width:620px){
+  section{padding:68px 0}
+  .hero{padding-top:36px}
+  .steps,.compare,.roadmap,.row2{grid-template-columns:1fr}
+  .step:nth-child(2n){padding-left:0;border-left:0}
+  .specs{grid-template-columns:1fr}
+  .kpis{grid-template-columns:1fr 1fr}
+  .rev{grid-template-columns:1fr}
+  .wallet-btn .label-long{display:none}
+}
+</style>
+</head>
+<body>
+
+<header class="nav">
+  <div class="wrap">
+    <a class="brand" href="#top" aria-label="QPU home"><img src="logo-icon.png" alt=""><span>QPU</span></a>
+    <nav class="links" id="links">
+      <a href="#agents">Agents</a>
+      <a href="#how">How it works</a>
+      <a href="#factory">Launch</a>
+      <a href="#flywheel">$QPU</a>
+      <a href="#model">Revenue</a>
+    </nav>
+    <a class="xbtn" href="https://x.com/QPUtech" target="_blank" rel="noopener" aria-label="QPU on X"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></a>
+    <div class="wallet-wrap">
+      <button class="btn btn-chrome wallet-btn" id="walletBtn" aria-haspopup="true"><span class="dot"></span><span id="walletLabel">Connect<span class="label-long"> wallet</span></span></button>
+      <div class="wallet-menu" id="walletMenu" role="menu">
+        <div class="addr" id="walletAddr"></div>
+        <button id="copyAddr" role="menuitem">Copy address</button>
+        <button id="disconnect" role="menuitem">Disconnect</button>
+      </div>
+    </div>
+    <button class="menu-btn" id="menuBtn" aria-label="Open menu" aria-expanded="false">
+      <svg width="18" height="14" viewBox="0 0 18 14" fill="currentColor"><rect width="18" height="2"/><rect y="6" width="18" height="2"/><rect y="12" width="18" height="2"/></svg>
+    </button>
+  </div>
+</header>
+
+<main id="top">
+  <section class="hero">
+    <div class="wrap">
+      <div>
+        <div class="status"><i></i>Solana launchpad for quantum computing agents</div>
+        <h1>Launch a coin.<br>Power a quantum computer.</h1>
+        <p class="lede">Every token on QPU is paired with its own autonomous agent that rents real quantum hardware, runs paid jobs for customers, and puts part of the net revenue into buybacks.</p>
+        <div class="hero-cta">
+          <a class="btn btn-chrome" href="#factory">Launch a coin + QPU</a>
+          <a class="btn btn-ghost" href="#agents">Browse agents</a>
+        </div>
+      </div>
+      <div class="sandbox" id="sandbox" aria-label="QPU sandbox mini game: drop qubits and fire them into the quantum processor">
+        <img class="sb-fallback" src="logo.webp" alt="QPU logo: a pixel-art quantum processor with wiring panels and an atom emblem">
+        <div class="sb-hud"><div><span>Jobs run</span><b id="sbJobs">0</b></div><div style="text-align:right"><span>Qubits on deck</span><b id="sbQ">0</b></div></div>
+        <p class="sb-hint" id="sbHint">Tap the floor to drop a qubit. Tap a qubit to fire it into the QPU. Drag to rotate.</p>
+        <div class="sb-controls">
+          <button id="sbDrop">Drop qubit</button>
+          <button id="sbFire" class="primary">Fire all</button>
+          <button id="sbReset">Reset</button>
+        </div>
+      </div>
+    </div>
+    <div class="ticker" aria-hidden="true">
+      <div class="ticker-track" id="ticker"></div>
+    </div>
+  </section>
+
+  <section id="agents">
+    <div class="wrap">
+      <h2>Live quantum agents</h2>
+      <p class="sub">Each agent gets a public dashboard with jobs completed, hardware used, compute costs, revenue, and buybacks.</p>
+      <div class="empty">
+        <div class="empty-slots" aria-hidden="true"><span>?</span><span>?</span><span>?</span></div>
+        <h3>No agents launched yet</h3>
+        <p>The first quantum agents will appear here with their live dashboards as soon as they launch.</p>
+        <a class="btn btn-chrome" href="#factory">Launch the first agent</a>
+      </div>
+    </div>
+  </section>
+
+  <section id="how" style="background:var(--gunmetal);border-block:1px solid var(--seam)">
+    <div class="wrap">
+      <h2>From launch to buyback</h2>
+      <p class="sub">No hardware to own. Your agent rents time on cloud quantum processors and runs as a service.</p>
+      <div class="steps">
+        <div class="step"><span class="n">1</span><h3>Launch a coin + QPU</h3><p>Create a token on Solana paired with its own quantum computing agent.</p></div>
+        <div class="step"><span class="n">2</span><h3>Choose a specialization</h3><p>Optimization, molecular simulation, cryptography research, or quantum machine learning.</p></div>
+        <div class="step"><span class="n">3</span><h3>Crowdfund compute</h3><p>Community contributions buy access to hardware from providers like IBM Quantum and Amazon Braket.</p></div>
+        <div class="step"><span class="n">4</span><h3>Execute quantum jobs</h3><p>Users submit tasks. The agent routes compatible workloads to available QPUs or simulators.</p></div>
+        <div class="step"><span class="n">5</span><h3>Generate revenue</h3><p>Customers pay for completed jobs. Revenue covers hardware and operating costs first.</p></div>
+        <div class="step"><span class="n">6</span><h3>Token buybacks</h3><p>A portion of realized net revenue buys back the agent's token, logged on its dashboard.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="factory">
+    <div class="wrap">
+      <h2>Quantum Agent Factory</h2>
+      <p class="sub">Configure your token and its agent. The dashboard on the right updates as you type.</p>
+      <div class="factory">
+        <form class="panel" id="launchForm" novalidate>
+          <h3>New agent</h3>
+          <div class="row2">
+            <div class="field">
+              <label for="fName">Agent name</label>
+              <input id="fName" maxlength="32" value="Qubit Optimizer" autocomplete="off">
+            </div>
+            <div class="field">
+              <label for="fTicker">Ticker</label>
+              <input id="fTicker" maxlength="10" value="QBIT" autocomplete="off">
+            </div>
+          </div>
+          <div class="field">
+            <label>Specialization</label>
+            <div class="specs" id="fSpecs">
+              <label><input type="radio" name="spec" value="Optimization" checked><span>Optimization<small>Routing, scheduling, portfolios</small></span></label>
+              <label><input type="radio" name="spec" value="Molecular simulation"><span>Molecular simulation<small>Ground states, chemistry</small></span></label>
+              <label><input type="radio" name="spec" value="Cryptography research"><span>Cryptography research<small>Post-quantum testing</small></span></label>
+              <label><input type="radio" name="spec" value="Quantum ML"><span>Quantum ML<small>Kernels, variational models</small></span></label>
+            </div>
+          </div>
+          <div class="row2">
+            <div class="field">
+              <label for="fProvider">Preferred provider</label>
+              <select id="fProvider">
+                <option>IBM Quantum</option>
+                <option>Amazon Braket</option>
+                <option>Simulator only</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="fBuyback">Buyback share of net revenue</label>
+              <select id="fBuyback">
+                <option value="20">20%</option>
+                <option value="30" selected>30%</option>
+                <option value="40">40%</option>
+                <option value="50">50%</option>
+              </select>
+            </div>
+          </div>
+          <div class="field">
+            <label for="fBuy">Your initial buy (SOL)</label>
+            <input id="fBuy" type="number" min="0" step="0.1" value="1" inputmode="decimal">
+            <div class="hint">Optional. Goes toward the agent's compute pool.</div>
+          </div>
+          <button class="btn btn-chrome" type="submit" style="width:100%;justify-content:center">Launch $<span id="btnTicker">QBIT</span></button>
+          <div class="form-msg" id="formMsg" role="status"></div>
+        </form>
+
+        <div class="panel dash" aria-live="polite">
+          <div class="dash-head">
+            <div class="sigil" id="pSigil">Q</div>
+            <div>
+              <div class="tk">$<span id="pTicker">QBIT</span></div>
+              <div class="kind"><span id="pName">Qubit Optimizer</span> · <span id="pSpec">Optimization</span></div>
+            </div>
+          </div>
+          <div class="kpis">
+            <div><span>Jobs completed</span><b>0</b></div>
+            <div><span>QPU seconds</span><b>0</b></div>
+            <div><span>Compute pool</span><b id="pPool">1.00 SOL</b></div>
+            <div><span>Revenue</span><b>$0</b></div>
+            <div><span>Compute costs</span><b>$0</b></div>
+            <div><span>Buybacks</span><b id="pBuyback">30% of net</b></div>
+          </div>
+          <div class="chart">
+            <div class="chart-cap"><span>Projected job load, first 12 weeks</span><span id="pProvider">IBM Quantum</span></div>
+            <svg viewBox="0 0 360 110" id="pChart" role="img" aria-label="Illustrative job load chart"></svg>
+          </div>
+          <div class="log">
+            <div><b>›</b> agent provisioned, awaiting compute pool</div>
+            <div><b>›</b> circuit compiler ready for <span id="pLog">optimization</span> workloads</div>
+            <div><b>›</b> dashboard goes public at launch</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="flywheel" style="background:var(--gunmetal);border-block:1px solid var(--seam)">
+    <div class="wrap fly">
+      <svg viewBox="0 0 400 400" aria-hidden="true">
+        <defs>
+          <linearGradient id="cg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff"/><stop offset=".5" stop-color="#7d828a"/><stop offset="1" stop-color="#d9dce1"/></linearGradient>
+          <marker id="ar" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#8a8f97"/></marker>
+        </defs>
+        <circle cx="200" cy="200" r="150" fill="none" stroke="#34373d" stroke-width="1" stroke-dasharray="3 6"/>
+        <g id="orbit" style="transform-origin:200px 200px;animation:spin 40s linear infinite">
+          <ellipse cx="200" cy="200" rx="128" ry="50" fill="none" stroke="#5a5e65" stroke-width="1.5"/>
+          <ellipse cx="200" cy="200" rx="128" ry="50" fill="none" stroke="#5a5e65" stroke-width="1.5" transform="rotate(60 200 200)"/>
+          <ellipse cx="200" cy="200" rx="128" ry="50" fill="none" stroke="#5a5e65" stroke-width="1.5" transform="rotate(120 200 200)"/>
+        </g>
+        <circle cx="200" cy="200" r="42" fill="#000" stroke="url(#cg)" stroke-width="3"/>
+        <text x="200" y="208" text-anchor="middle" font-family="Pixelify Sans, monospace" font-size="24" font-weight="700" fill="url(#cg)">$QPU</text>
+        <g font-family="Instrument Sans, sans-serif" font-size="13" fill="#c8ccd2" text-anchor="middle">
+          <circle cx="200" cy="50" r="5" fill="#f3f4f6"/><text x="200" y="34">Agents</text>
+          <circle cx="343" cy="154" r="5" fill="#f3f4f6"/><text x="352" y="138">Jobs</text>
+          <circle cx="288" cy="321" r="5" fill="#f3f4f6"/><text x="300" y="346">Revenue</text>
+          <circle cx="112" cy="321" r="5" fill="#f3f4f6"/><text x="100" y="346">Buybacks</text>
+          <circle cx="57" cy="154" r="5" fill="#f3f4f6"/><text x="48" y="138">Builders</text>
+        </g>
+        <path d="M214 51 A150 150 0 0 1 335 140" fill="none" stroke="#8a8f97" stroke-width="1.5" marker-end="url(#ar)"/>
+        <path d="M347 168 A150 150 0 0 1 297 309" fill="none" stroke="#8a8f97" stroke-width="1.5" marker-end="url(#ar)"/>
+        <path d="M275 328 A150 150 0 0 1 125 328" fill="none" stroke="#8a8f97" stroke-width="1.5" marker-end="url(#ar)"/>
+        <path d="M103 309 A150 150 0 0 1 53 168" fill="none" stroke="#8a8f97" stroke-width="1.5" marker-end="url(#ar)"/>
+        <path d="M65 140 A150 150 0 0 1 186 51" fill="none" stroke="#8a8f97" stroke-width="1.5" marker-end="url(#ar)"/>
+        <style>@keyframes spin{to{transform:rotate(360deg)}}</style>
+      </svg>
+      <div>
+        <h2>The $QPU flywheel</h2>
+        <p class="sub">Platform fees from every agent flow back to $QPU.</p>
+        <ol class="fly-list">
+          <li>More quantum agents launched</li>
+          <li>More computational jobs executed</li>
+          <li>More compute revenue generated</li>
+          <li>Revenue funds $QPU buybacks</li>
+          <li>More developers and quantum applications, driving demand for new agents</li>
+        </ol>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <div class="compare">
+        <div>
+          <h3 style="color:var(--steel)">Pump.fun</h3>
+          <p>Democratized token creation. Most quantum-themed tokens are a name and a chart.</p>
+        </div>
+        <div>
+          <h3>QPU</h3>
+          <p style="color:var(--chrome)">Democratizes access to quantum computing infrastructure. Every token is attached to a computational service that can serve real customers.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="model" style="padding-top:0">
+    <div class="wrap">
+      <h2>How QPU earns</h2>
+      <p class="sub">Five revenue lines, all reported publicly.</p>
+      <div class="rev">
+        <div><h4>Deployment fees</h4><p>Charged once when an agent launches.</p></div>
+        <div><h4>Compute job fees</h4><p>A cut of every paid job an agent completes.</p></div>
+        <div><h4>Management fees</h4><p>Ongoing routing, monitoring, and reporting.</p></div>
+        <div><h4>Enterprise API</h4><p>Direct programmatic access to agent fleets.</p></div>
+        <div><h4>Premium tools</h4><p>Advanced quantum optimization toolkits.</p></div>
+      </div>
+      <div class="roadmap">
+        <div><h4>Phase 1: Simulators</h4><p>Cloud quantum simulators and first real QPU integrations through existing providers.</p></div>
+        <div><h4>Phase 2: Small workloads</h4><p>Focused optimization and research jobs where results can be verified.</p></div>
+        <div><h4>Phase 3: Expansion</h4><p>More advanced applications, more providers, and enterprise access.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="final">
+    <div class="wrap">
+      <h2>Launching a quantum computing business should be as easy as launching a memecoin.</h2>
+      <p class="sub">Connect a Solana wallet to get started.</p>
+      <div class="hero-cta" style="justify-content:center">
+        <button class="btn btn-chrome" id="ctaConnect">Connect wallet</button>
+        <a class="btn btn-ghost" href="#factory">Open the factory</a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="top">
+      <a class="brand" href="#top"><img src="logo-icon.png" alt=""><span>QPU</span></a>
+      <div class="flinks">
+        <a href="#agents">Agents</a><a href="#factory">Launch</a><a href="#flywheel">$QPU</a><a href="#model">Revenue</a><a href="https://x.com/QPUtech" target="_blank" rel="noopener">X.com</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="mTitle">
+  <div class="modal-card">
+    <h3 id="mTitle">Connect a wallet</h3>
+    <p>Choose a Solana wallet installed in this browser.</p>
+    <div class="wlist" id="wlist"></div>
+    <button class="btn btn-ghost modal-close" id="mClose">Cancel</button>
+  </div>
+</div>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+(function(){
+  const $ = s => document.querySelector(s);
+  const toastEl = $('#toast'); let tt;
+  function toast(msg){ toastEl.textContent = msg; toastEl.classList.add('show'); clearTimeout(tt); tt = setTimeout(()=>toastEl.classList.remove('show'), 3200); }
+
+  /* ---------- Mobile menu ---------- */
+  $('#menuBtn').addEventListener('click', e => {
+    const open = $('#links').classList.toggle('open');
+    e.currentTarget.setAttribute('aria-expanded', open);
+  });
+  document.querySelectorAll('#links a').forEach(a => a.addEventListener('click', () => $('#links').classList.remove('open')));
+
+  /* ---------- Ticker ---------- */
+  const ev = ['<b>$QBIT</b> job #1284 routed to IBM Quantum <span class="ok">done</span>','<b>$MOLE</b> VQE run, 24 qubits <span class="ok">done</span>','<b>$ROUTE</b> buyback executed','<b>$QKRN</b> kernel training job queued','<b>$SHOR</b> compute pool +12 SOL','<b>$QNN</b> job routed to Amazon Braket <span class="ok">done</span>','<b>$VQE</b> new agent launched'];
+  const html = ev.map(x=>`<span>${x}</span>`).join('');
+  $('#ticker').innerHTML = html + html;
+
+  /* ---------- Factory live preview ---------- */
+  const fName=$('#fName'), fTicker=$('#fTicker'), fProv=$('#fProvider'), fBb=$('#fBuyback'), fBuy=$('#fBuy');
+  function clean(t){ return (t||'').toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,10); }
+  function chart(seed){
+    let h='', x=0; const w=360/12;
+    for(let i=0;i<12;i++){ const v = 14 + Math.round((Math.sin(seed+i*.9)+1)*14 + i*5.2); h += `<rect x="${i*w+4}" y="${106-v}" width="${w-8}" height="${v}" fill="url(#bg)"/>`; }
+    $('#pChart').innerHTML = '<defs><linearGradient id="bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f3f4f6"/><stop offset="1" stop-color="#5a5e65"/></linearGradient></defs><line x1="0" y1="106.5" x2="360" y2="106.5" stroke="#34373d"/>' + h;
+  }
+  function update(){
+    const t = clean(fTicker.value) || 'TICKER';
+    const spec = document.querySelector('input[name=spec]:checked').value;
+    $('#pTicker').textContent = t; $('#btnTicker').textContent = t; $('#pSigil').textContent = t[0];
+    $('#pName').textContent = fName.value.trim() || 'Unnamed agent';
+    $('#pSpec').textContent = spec; $('#pLog').textContent = spec.toLowerCase();
+    $('#pProvider').textContent = fProv.value;
+    $('#pBuyback').textContent = fBb.value + '% of net';
+    const b = Math.max(0, parseFloat(fBuy.value) || 0);
+    $('#pPool').textContent = b.toFixed(2) + ' SOL';
+    chart(t.split('').reduce((a,c)=>a+c.charCodeAt(0),0));
+  }
+  ['input','change'].forEach(evn => $('#launchForm').addEventListener(evn, update));
+  fTicker.addEventListener('blur', () => { fTicker.value = clean(fTicker.value); });
+  update();
+
+  /* ---------- Solana wallet ---------- */
+  const RPC = 'https://api.mainnet-beta.solana.com';
+  const wallets = [
+    {id:'phantom', name:'Phantom', get:()=> window.phantom?.solana?.isPhantom ? window.phantom.solana : (window.solana?.isPhantom ? window.solana : null), url:'https://phantom.app/'},
+    {id:'solflare', name:'Solflare', get:()=> window.solflare?.isSolflare ? window.solflare : null, url:'https://solflare.com/'},
+    {id:'backpack', name:'Backpack', get:()=> window.backpack?.isBackpack ? window.backpack : (window.backpack || null), url:'https://backpack.app/'}
+  ];
+  let provider = null, pubkey = null;
+
+  function short(k){ return k.slice(0,4) + '…' + k.slice(-4); }
+  function setConnected(pk){
+    pubkey = pk;
+    const btn = $('#walletBtn');
+    if(pk){
+      btn.classList.add('on');
+      $('#walletLabel').textContent = short(pk);
+      $('#walletAddr').textContent = pk;
+      $('#ctaConnect').textContent = 'Wallet connected';
+      fetchBalance(pk);
+    } else {
+      btn.classList.remove('on');
+      $('#walletLabel').innerHTML = 'Connect<span class="label-long"> wallet</span>';
+      $('#ctaConnect').textContent = 'Connect wallet';
+      $('#walletMenu').classList.remove('open');
+    }
+  }
+  async function fetchBalance(pk){
+    try{
+      if(!window.solanaWeb3) return;
+      const conn = new solanaWeb3.Connection(RPC, 'confirmed');
+      const lamports = await conn.getBalance(new solanaWeb3.PublicKey(pk));
+      $('#walletAddr').textContent = pk + '\n' + (lamports / solanaWeb3.LAMPORTS_PER_SOL).toFixed(3) + ' SOL';
+    }catch(e){ /* RPC unavailable in this environment; address still shown */ }
+  }
+  function openModal(){
+    $('#wlist').innerHTML = wallets.map(w => w.get()
+      ? `<button data-w="${w.id}">${w.name}<small>Detected</small></button>`
+      : `<a href="${w.url}" target="_blank" rel="noopener">${w.name}<small>Install</small></a>`).join('');
+    $('#modal').classList.add('open');
+    const first = $('#wlist').querySelector('button,a'); first && first.focus();
+  }
+  function closeModal(){ $('#modal').classList.remove('open'); }
+  async function connect(id){
+    const w = wallets.find(x=>x.id===id); const p = w && w.get();
+    if(!p){ toast(w.name + ' was not found in this browser.'); return; }
+    try{
+      const res = await p.connect();
+      const raw = (res && res.publicKey) || p.publicKey;
+      const pk = new solanaWeb3.PublicKey(raw.toString()).toBase58(); // validate with web3.js
+      provider = p; closeModal(); setConnected(pk);
+      p.on && p.on('disconnect', () => { provider=null; setConnected(null); });
+      p.on && p.on('accountChanged', k => k ? setConnected(k.toString()) : setConnected(null));
+      toast('Connected ' + short(pk));
+    }catch(e){ toast(e && e.code === 4001 ? 'Connection request was rejected in the wallet.' : 'Could not connect. Unlock your wallet and try again.'); }
+  }
+  $('#wlist').addEventListener('click', e => { const b = e.target.closest('button[data-w]'); if(b) connect(b.dataset.w); });
+  $('#mClose').addEventListener('click', closeModal);
+  $('#modal').addEventListener('click', e => { if(e.target.id==='modal') closeModal(); });
+  document.addEventListener('keydown', e => { if(e.key==='Escape'){ closeModal(); $('#walletMenu').classList.remove('open'); } });
+
+  $('#walletBtn').addEventListener('click', e => {
+    e.stopPropagation();
+    if(pubkey) $('#walletMenu').classList.toggle('open'); else openModal();
+  });
+  $('#ctaConnect').addEventListener('click', () => { if(!pubkey) openModal(); else toast('Already connected as ' + short(pubkey)); });
+  document.addEventListener('click', e => { if(!e.target.closest('.wallet-wrap')) $('#walletMenu').classList.remove('open'); });
+  $('#copyAddr').addEventListener('click', async () => { try{ await navigator.clipboard.writeText(pubkey); toast('Address copied'); }catch(e){ toast('Copy failed. Select the address manually.'); } $('#walletMenu').classList.remove('open'); });
+  $('#disconnect').addEventListener('click', async () => { try{ await provider?.disconnect(); }catch(e){} provider=null; setConnected(null); toast('Wallet disconnected'); });
+
+  // Silent reconnect for wallets that were already trusted
+  window.addEventListener('load', async () => {
+    for(const w of wallets){
+      const p = w.get();
+      if(p && w.id==='phantom'){
+        try{ const r = await p.connect({onlyIfTrusted:true}); provider=p; setConnected(r.publicKey.toString()); }catch(e){}
+      }
+    }
+  });
+
+  /* ---------- Launch submit ---------- */
+  $('#launchForm').addEventListener('submit', e => {
+    e.preventDefault();
+    const msg = $('#formMsg');
+    const t = clean(fTicker.value);
+    if(!fName.value.trim()){ msg.textContent = 'Give your agent a name.'; fName.focus(); return; }
+    if(t.length < 2){ msg.textContent = 'Ticker needs at least 2 letters or numbers.'; fTicker.focus(); return; }
+    if(!pubkey){ msg.textContent = 'Connect a Solana wallet to launch.'; openModal(); return; }
+    msg.textContent = '$' + t + ' is configured. Launches open with mainnet; nothing was signed or sent.';
+    toast('$' + t + ' saved as a draft');
+  });
+})();
+</script>
+<script>
+(function(){
+  const host = document.getElementById('sandbox');
+  if(!host) return;
+  let renderer;
+  try{
+    if(!window.THREE || !THREE.OrbitControls) throw new Error('three missing');
+    renderer = new THREE.WebGLRenderer({antialias:true, alpha:true});
+  }catch(e){ host.classList.add('no-gl'); return; }
+
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  renderer.outputEncoding = THREE.sRGBEncoding;
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.05;
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  host.insertBefore(renderer.domElement, host.firstChild);
+
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(36, 1, 0.1, 100);
+  camera.position.set(4.2, 5.2, 11.5);
+
+  const controls = new THREE.OrbitControls(camera, renderer.domElement);
+  controls.target.set(0, 2.7, 0);
+  controls.enableDamping = true;
+  controls.enablePan = false;
+  controls.minDistance = 7;
+  controls.maxDistance = 17;
+  controls.maxPolarAngle = Math.PI * 0.49;
+  controls.autoRotate = !reduce;
+  controls.autoRotateSpeed = 0.7;
+  controls.update();
+
+  /* ---- Chrome studio environment (drawn, no network) ---- */
+  const envCanvas = document.createElement('canvas');
+  envCanvas.width = 512; envCanvas.height = 256;
+  const g = envCanvas.getContext('2d');
+  const grad = g.createLinearGradient(0,0,0,256);
+  grad.addColorStop(0,'#8c929a'); grad.addColorStop(.40,'#f4f5f7'); grad.addColorStop(.5,'#2e3035'); grad.addColorStop(.62,'#08090a'); grad.addColorStop(1,'#000');
+  g.fillStyle = grad; g.fillRect(0,0,512,256);
+  g.fillStyle = '#ffffff';
+  [[40,40,46,70],[180,30,30,90],[300,50,70,50],[430,36,24,80]].forEach(r=>g.fillRect(...r));
+  const envTex = new THREE.CanvasTexture(envCanvas);
+  envTex.mapping = THREE.EquirectangularReflectionMapping;
+  envTex.encoding = THREE.sRGBEncoding;
+  const pmrem = new THREE.PMREMGenerator(renderer);
+  scene.environment = pmrem.fromEquirectangular(envTex).texture;
+  envTex.dispose();
+
+  /* ---- Lights ---- */
+  scene.add(new THREE.HemisphereLight(0xffffff, 0x111111, 0.35));
+  const key = new THREE.DirectionalLight(0xffffff, 1.3);
+  key.position.set(5, 11, 7); key.castShadow = true;
+  key.shadow.mapSize.set(1024,1024);
+  Object.assign(key.shadow.camera, {left:-7,right:7,top:7,bottom:-7,near:1,far:30});
+  scene.add(key);
+  const rim = new THREE.DirectionalLight(0xdfe6ee, 0.7); rim.position.set(-6, 5, -7); scene.add(rim);
+  const coreLight = new THREE.PointLight(0xe8fff0, 0, 6); coreLight.position.set(0, 2.7, 1.6); scene.add(coreLight);
+
+  /* ---- Materials ---- */
+  const chrome = new THREE.MeshStandardMaterial({color:0xe2e5e9, metalness:1, roughness:0.2});
+  const steel = new THREE.MeshStandardMaterial({color:0xa3a8b0, metalness:1, roughness:0.35});
+  const dark = new THREE.MeshStandardMaterial({color:0x141518, metalness:0.6, roughness:0.55});
+  const cableMat = new THREE.MeshStandardMaterial({color:0xb9bdc4, metalness:0.9, roughness:0.3});
+
+  const device = new THREE.Group(); scene.add(device);
+  function add(geo, mat, x, y, z, parent){ const m = new THREE.Mesh(geo, mat); m.position.set(x,y,z); m.castShadow = true; m.receiveShadow = true; (parent||device).add(m); return m; }
+  const cyl = (r,h,s) => new THREE.CylinderGeometry(r,r,h,s||40);
+
+  // Feet + base
+  add(new THREE.BoxGeometry(.3,.12,.3), dark, -.6,.06,.35); add(new THREE.BoxGeometry(.3,.12,.3), dark, .6,.06,.35);
+  add(new THREE.BoxGeometry(.3,.12,.3), dark, -.6,.06,-.35); add(new THREE.BoxGeometry(.3,.12,.3), dark, .6,.06,-.35);
+  add(cyl(1.05,.22), chrome, 0,.23,0); add(cyl(1.07,.04), dark, 0,.36,0); add(cyl(1.05,.2), chrome, 0,.48,0);
+  // Connector ring
+  const conGeo = cyl(.085,.16,12);
+  for(let i=0;i<14;i++){ const a = i/14*Math.PI*2; add(conGeo, steel, Math.cos(a)*.82, .66, Math.sin(a)*.82); }
+  // Hourglass cable bundle
+  for(let i=0;i<22;i++){
+    const a = i/22*Math.PI*2, tw = 0.9;
+    const pts = [
+      new THREE.Vector3(Math.cos(a)*.8, .7, Math.sin(a)*.8),
+      new THREE.Vector3(Math.cos(a+tw*.5)*.5, 1.15, Math.sin(a+tw*.5)*.5),
+      new THREE.Vector3(Math.cos(a+tw)*.36, 1.45, Math.sin(a+tw)*.36),
+      new THREE.Vector3(Math.cos(a+tw*1.4)*.55, 1.8, Math.sin(a+tw*1.4)*.55),
+      new THREE.Vector3(Math.cos(a+tw*1.6)*.75, 2.02, Math.sin(a+tw*1.6)*.75)];
+    add(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 28, i%3===0?.055:.04, 6), cableMat, 0,0,0);
+  }
+  // Collars
+  add(cyl(.95,.14), chrome, 0,2.08,0); add(cyl(.98,.03), dark, 0,2.165,0); add(cyl(.95,.14), chrome, 0,2.25,0);
+  // Main band (elliptical, like the logo's wide nameplate)
+  const band = add(cyl(1,.82,64), chrome, 0,2.72,0); band.scale.set(1.55,1,.75);
+  const bandTrim = add(cyl(1.01,.04,64), dark, 0,2.33,0); bandTrim.scale.set(1.55,1,.75);
+  // Rivets on band
+  const rivet = new THREE.SphereGeometry(.045,10,8);
+  [[-1.32,2.95],[-1.32,2.5],[1.32,2.95],[1.32,2.5]].forEach(([x,y])=>{ const z = .75*Math.sqrt(1-(x/1.55)**2); add(rivet, dark, x,y,z+.01); });
+  // Screen with the logo's own atom panel
+  add(new THREE.BoxGeometry(1.24,.66,.12), dark, 0,2.72,.7);
+  const screenTex = new THREE.TextureLoader().load('qpu-screen.png');
+  screenTex.encoding = THREE.sRGBEncoding; screenTex.magFilter = THREE.NearestFilter;
+  const screenMat = new THREE.MeshBasicMaterial({map:screenTex, toneMapped:false});
+  const screen = new THREE.Mesh(new THREE.PlaneGeometry(1.14,.6), screenMat);
+  screen.position.set(0,2.72,.765); device.add(screen);
+  const screenBack = screen.clone(); screenBack.rotation.y = Math.PI; screenBack.position.z = -.765;
+  add(new THREE.BoxGeometry(1.24,.66,.12), dark, 0,2.72,-.7); device.add(screenBack);
+  // Stud pins on top of band
+  const stud = new THREE.BoxGeometry(.12,.12,.12);
+  [-1.05,-.45,-.25,-.05,.15,.35,.55,1.05].forEach(x=>add(stud, steel, x,3.19,.25));
+
+  // Twin wiring panels
+  const panelGeo = new THREE.BoxGeometry(1.0,1.55,.5);
+  const rodGeo = cyl(.03,.98,8); rodGeo.rotateZ(Math.PI/2);
+  const ballGeo = new THREE.SphereGeometry(.07,12,10);
+  const nubGeo = new THREE.BoxGeometry(.14,.1,.42);
+  [-1,1].forEach(side=>{
+    const px = side*.6;
+    add(panelGeo, dark, px,3.98,0);
+    const frame = add(new THREE.BoxGeometry(1.04,1.59,.06), steel, px,3.98,-.24);
+    for(let r=0;r<5;r++){
+      const y = 4.6 - r*.31;
+      add(rodGeo, chrome, px,y,.29);
+      add(nubGeo, chrome, px+side*.55,y,0);
+      const n = side>0 ? 4 : 2;
+      for(let k=0;k<n;k++) add(ballGeo, chrome, px - .32 + k*(side>0?.21:.21), y, .3);
+    }
+  });
+  // Wires flowing from panels into the band
+  for(let i=0;i<10;i++){
+    const side = i%2 ? 1 : -1, k = Math.floor(i/2);
+    const pts = [
+      new THREE.Vector3(side*(.5-k*.06), 4.55-k*.22, .3),
+      new THREE.Vector3(side*(.18+k*.02), 4.1-k*.1, .36),
+      new THREE.Vector3(side*(.08+k*.03), 3.55, .34),
+      new THREE.Vector3(side*(.05+k*.07), 3.2, .3)];
+    add(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 20, .028, 6), cableMat, 0,0,0);
+  }
+  // Central column, collars and T-handle
+  add(cyl(.22,2.2,24), chrome, 0,4.3,0);
+  add(cyl(.33,.2), chrome, 0,4.86,0); add(cyl(.34,.03), dark, 0,4.975,0); add(cyl(.33,.2), chrome, 0,5.09,0);
+  [[-.38,4.86],[.38,4.86],[-.38,5.09],[.38,5.09]].forEach(([x,y])=>add(new THREE.BoxGeometry(.1,.12,.12), steel, x,y,0));
+  add(new THREE.BoxGeometry(.42,.3,.32), chrome, 0,5.47,0);
+  add(new THREE.BoxGeometry(1.64,.17,.17), chrome, 0,5.47,0);
+  [-.66,.66,-.12,.12].forEach(x=>add(new THREE.SphereGeometry(.03,8,6), dark, x,5.47,.09));
+
+  // Intake glow ring above handle (the target)
+  const ring = new THREE.Mesh(new THREE.TorusGeometry(.75,.02,8,64), new THREE.MeshBasicMaterial({color:0xffffff, transparent:true, opacity:.25}));
+  ring.rotation.x = Math.PI/2; ring.position.y = 5.95; scene.add(ring);
+
+  // Floor
+  const floor = new THREE.Mesh(new THREE.CircleGeometry(6,64), new THREE.MeshStandardMaterial({color:0x0b0b0c, metalness:.3, roughness:.8}));
+  floor.rotation.x = -Math.PI/2; floor.receiveShadow = true; scene.add(floor);
+  const grid = new THREE.PolarGridHelper(5.6, 16, 6, 64, 0x34373d, 0x1f2125);
+  grid.position.y = .002; scene.add(grid);
+
+  /* ---- Qubits + physics ---- */
+  const R = .22, G = 9.8, WALL = 5.3, MAX = 40;
+  const qGeo = new THREE.SphereGeometry(R, 24, 16);
+  const qRingGeo = new THREE.TorusGeometry(R*1.55, .018, 6, 40);
+  const hitGeo = new THREE.SphereGeometry(.5, 8, 6);
+  const hitMat = new THREE.MeshBasicMaterial({visible:false});
+  const qMat = new THREE.MeshStandardMaterial({color:0xffffff, emissive:0xc9d4de, emissiveIntensity:.55, metalness:.2, roughness:.25});
+  const qRingMat = new THREE.MeshStandardMaterial({color:0xe2e5e9, metalness:1, roughness:.2});
+  const qubits = [];
+
+  const colliders = [
+    {y0:0, y1:.58, t:'e', a:1.05, b:1.05},
+    {y0:.58, y1:2.0, t:'e', a:.82, b:.82},
+    {y0:2.0, y1:2.32, t:'e', a:.96, b:.96},
+    {y0:2.32, y1:3.13, t:'e', a:1.55, b:.75},
+    {y0:3.13, y1:4.76, t:'b', a:1.18, b:.42},
+    {y0:4.76, y1:5.2, t:'e', a:.34, b:.34},
+    {y0:5.38, y1:5.56, t:'b', a:.82, b:.12}
+  ];
+
+  function spawn(x, y, z, vx, vz){
+    if(qubits.length >= MAX){ const old = qubits.shift(); scene.remove(old.g); }
+    const grp = new THREE.Group();
+    const core = new THREE.Mesh(qGeo, qMat); core.castShadow = true; grp.add(core);
+    const r1 = new THREE.Mesh(qRingGeo, qRingMat); grp.add(r1);
+    const hit = new THREE.Mesh(hitGeo, hitMat); grp.add(hit);
+    grp.position.set(x,y,z);
+    r1.rotation.set(Math.random()*3, Math.random()*3, 0);
+    scene.add(grp);
+    const q = {g:grp, ring:r1, hit, p:grp.position, v:new THREE.Vector3(vx||0,0,vz||0), absorbing:0, spin:1+Math.random()*2};
+    hit.userData.q = q;
+    qubits.push(q); updateHud();
+    return q;
+  }
+
+  function fire(q){
+    if(q.absorbing) return;
+    const T = 1.3, target = new THREE.Vector3(0, 5.75, 0);
+    q.v.set((target.x-q.p.x)/T, (target.y-q.p.y)/T + .5*G*T, (target.z-q.p.z)/T);
+    q.spin = 8;
+  }
+
+  function collide(q, prevY){
+    for(const c of colliders){
+      if(q.p.y - R > c.y1 || q.p.y + R < c.y0) continue;
+      const ea = c.a + R, eb = c.b + R;
+      let inside;
+      if(c.t === 'e') inside = (q.p.x/ea)**2 + (q.p.z/eb)**2 < 1;
+      else inside = Math.abs(q.p.x) < ea && Math.abs(q.p.z) < eb;
+      if(!inside) continue;
+      if(prevY - R >= c.y1 - .03){ // landed on top
+        q.p.y = c.y1 + R; if(q.v.y < 0) q.v.y = Math.abs(q.v.y) > .6 ? -q.v.y*.45 : 0;
+        q.v.x *= .97; q.v.z *= .97; continue;
+      }
+      let nx, nz;
+      if(c.t === 'e'){
+        const k = Math.sqrt((q.p.x/ea)**2 + (q.p.z/eb)**2) || 1e-4;
+        if(k < 1e-3){ q.p.x = ea; q.p.z = 0; nx = 1; nz = 0; }
+        else { q.p.x /= k; q.p.z /= k; nx = q.p.x/(ea*ea); nz = q.p.z/(eb*eb); }
+      } else {
+        const px = ea - Math.abs(q.p.x), pz = eb - Math.abs(q.p.z);
+        if(px < pz){ nx = Math.sign(q.p.x)||1; nz = 0; q.p.x = nx*ea; } else { nz = Math.sign(q.p.z)||1; nx = 0; q.p.z = nz*eb; }
+      }
+      const len = Math.hypot(nx,nz) || 1; nx/=len; nz/=len;
+      const vn = q.v.x*nx + q.v.z*nz;
+      if(vn < 0){ q.v.x -= 1.5*vn*nx; q.v.z -= 1.5*vn*nz; }
+    }
+  }
+
+  let jobs = 0, flash = 0;
+  const jobsEl = document.getElementById('sbJobs'), qEl = document.getElementById('sbQ');
+  function updateHud(){ qEl.textContent = qubits.filter(q=>!q.absorbing).length; }
+  function bump(el){ el.classList.remove('bump'); void el.offsetWidth; el.classList.add('bump'); setTimeout(()=>el.classList.remove('bump'),160); }
+
+  function step(dt){
+    for(let i=qubits.length-1;i>=0;i--){
+      const q = qubits[i];
+      if(q.absorbing){
+        q.absorbing += dt;
+        q.p.lerp(new THREE.Vector3(0,4.9,0), Math.min(1, dt*9));
+        const s = Math.max(.01, 1 - q.absorbing/.45); q.g.scale.setScalar(s);
+        if(q.absorbing > .45){
+          scene.remove(q.g); qubits.splice(i,1);
+          jobs++; jobsEl.textContent = jobs; bump(jobsEl); flash = 1; updateHud();
+        }
+        continue;
+      }
+      const prevY = q.p.y;
+      q.v.y -= G*dt;
+      q.p.addScaledVector(q.v, dt);
+      const d = Math.hypot(q.p.x, q.p.z);
+      if(d < .95 && q.p.y > 4.85 && q.p.y < 6.7){ q.absorbing = .001; updateHud(); continue; }
+      if(q.p.y < R){
+        q.p.y = R;
+        q.v.y = q.v.y < -.8 ? -q.v.y*.5 : 0;
+        q.v.x *= Math.pow(.25, dt); q.v.z *= Math.pow(.25, dt);
+      }
+      if(d > WALL - R){ const nx = q.p.x/d, nz = q.p.z/d; q.p.x = nx*(WALL-R); q.p.z = nz*(WALL-R); const vn = q.v.x*nx + q.v.z*nz; if(vn>0){ q.v.x -= 1.6*vn*nx; q.v.z -= 1.6*vn*nz; } }
+      collide(q, prevY);
+      q.ring.rotation.x += dt*q.spin; q.ring.rotation.y += dt*q.spin*.7;
+      q.spin = Math.max(1.2, q.spin - dt*3);
+    }
+    // qubit-qubit
+    for(let i=0;i<qubits.length;i++) for(let j=i+1;j<qubits.length;j++){
+      const a = qubits[i], b = qubits[j]; if(a.absorbing || b.absorbing) continue;
+      const dx = b.p.x-a.p.x, dy = b.p.y-a.p.y, dz = b.p.z-a.p.z, dist = Math.hypot(dx,dy,dz);
+      if(dist > 0 && dist < 2*R){
+        const nx = dx/dist, ny = dy/dist, nz = dz/dist, push = (2*R - dist)/2;
+        a.p.x -= nx*push; a.p.y -= ny*push; a.p.z -= nz*push;
+        b.p.x += nx*push; b.p.y += ny*push; b.p.z += nz*push;
+        const rv = (b.v.x-a.v.x)*nx + (b.v.y-a.v.y)*ny + (b.v.z-a.v.z)*nz;
+        if(rv < 0){ const imp = -rv*.9; a.v.x -= imp*nx; a.v.y -= imp*ny; a.v.z -= imp*nz; b.v.x += imp*nx; b.v.y += imp*ny; b.v.z += imp*nz; }
+      }
+    }
+  }
+
+  /* ---- Interaction ---- */
+  const ray = new THREE.Raycaster(), ndc = new THREE.Vector2(), groundPlane = new THREE.Plane(new THREE.Vector3(0,1,0), 0);
+  let down = null;
+  const hint = document.getElementById('sbHint');
+  function interacted(){ hint.classList.add('gone'); controls.autoRotate = false; }
+  controls.addEventListener('start', interacted);
+  renderer.domElement.addEventListener('pointerdown', e => { down = {x:e.clientX, y:e.clientY, t:performance.now()}; });
+  renderer.domElement.addEventListener('pointerup', e => {
+    if(!down) return;
+    const moved = Math.hypot(e.clientX-down.x, e.clientY-down.y), dt = performance.now()-down.t; down = null;
+    if(moved > 8 || dt > 450) return;
+    const rect = renderer.domElement.getBoundingClientRect();
+    ndc.set(((e.clientX-rect.left)/rect.width)*2-1, -((e.clientY-rect.top)/rect.height)*2+1);
+    ray.setFromCamera(ndc, camera);
+    interacted();
+    const hits = ray.intersectObjects(qubits.filter(q=>!q.absorbing).map(q=>q.hit), false);
+    if(hits.length){ fire(hits[0].object.userData.q); return; }
+    if(ray.intersectObject(device, true).length){ spawn((Math.random()-.5)*.3, 8, (Math.random()-.5)*.3); return; }
+    const pt = new THREE.Vector3();
+    if(ray.ray.intersectPlane(groundPlane, pt)){
+      const d = Math.hypot(pt.x, pt.z);
+      if(d > WALL - .4){ pt.x *= (WALL-.4)/d; pt.z *= (WALL-.4)/d; }
+      spawn(pt.x, 7, pt.z);
+    }
+  });
+
+  function randomDrop(){
+    const a = Math.random()*Math.PI*2, r = 1.9 + Math.random()*2.6;
+    spawn(Math.cos(a)*r, 6 + Math.random()*2, Math.sin(a)*r);
+  }
+  document.getElementById('sbDrop').addEventListener('click', () => { interacted(); randomDrop(); });
+  document.getElementById('sbFire').addEventListener('click', () => {
+    interacted();
+    const ready = qubits.filter(q => !q.absorbing);
+    if(!ready.length){ for(let i=0;i<4;i++) setTimeout(randomDrop, i*120); return; }
+    ready.forEach((q,i) => setTimeout(() => fire(q), i*90));
+  });
+  document.getElementById('sbReset').addEventListener('click', () => {
+    qubits.splice(0).forEach(q => scene.remove(q.g));
+    jobs = 0; jobsEl.textContent = 0; updateHud();
+    controls.reset(); controls.autoRotate = !reduce;
+  });
+
+  /* ---- Loop ---- */
+  function resize(){
+    const w = host.clientWidth, h = host.clientHeight; if(!w || !h) return;
+    renderer.setSize(w, h, false); camera.aspect = w/h;
+    camera.fov = w/h < .9 ? 42 : 36; camera.updateProjectionMatrix();
+  }
+  new ResizeObserver(resize).observe(host); resize();
+
+  let visible = true;
+  new IntersectionObserver(([en]) => { visible = en.isIntersecting; }, {threshold:0}).observe(host);
+
+  const clock = new THREE.Clock(); let t = 0;
+  function loop(){
+    requestAnimationFrame(loop);
+    const dt = Math.min(clock.getDelta(), 1/30);
+    if(!visible || document.hidden) return;
+    t += dt;
+    const sub = 3; for(let i=0;i<sub;i++) step(dt/sub);
+    flash = Math.max(0, flash - dt*2.2);
+    screenMat.color.setScalar(1 + flash*1.6);
+    coreLight.intensity = flash*4;
+    ring.material.opacity = .18 + .12*Math.sin(t*2.4) + flash*.6;
+    ring.scale.setScalar(1 + flash*.25);
+    controls.update();
+    renderer.render(scene, camera);
+  }
+  loop();
+
+  // A few qubits to start
+  setTimeout(()=>{ for(let i=0;i<5;i++) setTimeout(randomDrop, i*220); }, 500);
+})();
+</script>
+
+</body>
+</html>
